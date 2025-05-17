@@ -1,0 +1,44 @@
+pipeline:
+  model:
+    name: random_forest
+    params: {}
+  search_space:
+    xgboost:
+      n_estimators:
+      - 50
+      - 300
+      max_depth:
+      - 2
+      - 10
+      learning_rate:
+      - 0.01
+      - 0.3
+      subsample:
+      - 0.5
+      - 1.0
+    random_forest:
+      n_estimators:
+      - 50
+      - 300
+      max_depth:
+      - 2
+      - 10
+      criterion:
+      - gini
+      - entropy
+    lightgbm:
+      n_estimators:
+      - 50
+      - 300
+      max_depth:
+      - 2
+      - 10
+      learning_rate:
+      - 0.01
+      - 0.3
+  data:
+    path: data/raw/Titanic-Dataset.csv
+    target: Survived
+  training:
+    test_size: 0.2
+    n_trials: 20
