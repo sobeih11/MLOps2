@@ -1,0 +1,27 @@
+schema: '2.0'
+stages:
+  split:
+    cmd: python src/split_data.py
+    deps:
+    - path: data/raw/Titanic-Dataset.csv
+      hash: md5
+      md5: 2309cc5f04782ed9bb6016d9f4e381cf
+      size: 61194
+    - path: src/split_data.py
+      hash: md5
+      md5: b8d2592720a390d20e6f7849698711d3
+      size: 1053
+    params:
+      params.yaml:
+        split.data_path: data/raw/Titanic-Dataset.csv
+        split.target_col: Survived
+        split.test_size: 0.2
+    outs:
+    - path: data/processed/test.parquet
+      hash: md5
+      md5: de4fa3aaf4546731e62bedd2b10195cd
+      size: 16205
+    - path: data/processed/train.parquet
+      hash: md5
+      md5: 44abb3281a100340e5108c732345be94
+      size: 36304
