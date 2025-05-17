@@ -1,0 +1,53 @@
+pipeline:
+  model:
+    name: xgboost
+    params: {}
+  search_space:
+    xgboost:
+      n_estimators:
+      - 50
+      - 300
+      max_depth:
+      - 2
+      - 10
+      learning_rate:
+      - 0.01
+      - 0.3
+      subsample:
+      - 0.5
+      - 1.0
+    random_forest:
+      n_estimators:
+      - 50
+      - 300
+      max_depth:
+      - 2
+      - 10
+      criterion:
+      - gini
+      - entropy
+    lightgbm:
+      n_estimators:
+      - 50
+      - 300
+      max_depth:
+      - 2
+      - 10
+      learning_rate:
+      - 0.01
+      - 0.3
+  data:
+    path: data/raw/Titanic-Dataset.csv
+    target: Survived
+  training:
+    test_size: 0.1
+    n_trials: 20
+  split:
+    data_path: data/raw/Titanic-Dataset.csv
+    target_col: Survived
+    test_size: 0.2
+  evaluation: null
+  model_path: models/xgboost_pipeline.pkl
+  test_data_path: data/processed/test.parquet
+  target_col: Survived
+  report_path: reports/evaluation_report.json
