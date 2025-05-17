@@ -1,0 +1,13 @@
+stages:
+  split:
+    cmd: python src/split_data.py
+    deps:
+    - data/raw/Titanic-Dataset.csv
+    - src/split_data.py
+    params:
+    - split.data_path
+    - split.target_col
+    - split.test_size
+    outs:
+    - data/processed/test.parquet
+    - data/processed/train.parquet

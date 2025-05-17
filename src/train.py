@@ -1,54 +1,52 @@
 import optuna
+import pandas as pd
+import joblib
+import yaml
+import os
+import dvc.api
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
-    accuracy_score,
-    confusion_matrix,
-    precision_score,
-    recall_score,
-    f1_score
+    accuracy_score, confusion_matrix, precision_score, recall_score, f1_score
 )
-import hydra
-from omegaconf import DictConfig
-from src.data import load_data
 from src.pipeline import build_pipeline
-import joblib
 from src.logger import get_logger
-from sklearn.metrics import confusion_matrix
-import os
+
 logger = get_logger(__name__)
 
 
+# with open("params.yaml", "r") as f:
+#     params = yaml.safe_load(f)
 
-def objective(trial, cfg):
-    model_name = cfg.model.name
-    search = cfg.search_space[model_name]
-    target_col = cfg.data.target
-    data_path = cfg.data.path
-    test_size = cfg.training.test_size
 
-    logger.info(f" Trial {trial.number} started for model: {model_name}")
+def objective(trial):
+    model_name = params["model"]["name"]
+    search = params["search_space"][model_name]
+    target_col = params["data"]["target"]
+    data_path = params["data"]["path"]
+    test_size = params["training"]["test_size"]
 
+    logger.info(f"Trial {trial.number} started for model: {model_name}")
 
     if model_name == "random_forest":
         model_params = {
-            "n_estimators": trial.suggest_int("n_estimators", search.n_estimators[0], search.n_estimators[1]),
-            "max_depth": trial.suggest_int("max_depth", search.max_depth[0], search.max_depth[1]),
-            "criterion": trial.suggest_categorical("criterion", search.criterion)
+            "n_estimators": trial.suggest_int("n_estimators", *search["n_estimators"]),
+            "max_depth": trial.suggest_int("max_depth", *search["max_depth"]),
+            "criterion": trial.suggest_categorical("criterion", search["criterion"])
         }
 
     elif model_name == "xgboost":
         model_params = {
-            "n_estimators": trial.suggest_int("n_estimators", search.n_estimators[0], search.n_estimators[1]),
-            "max_depth": trial.suggest_int("max_depth", search.max_depth[0], search.max_depth[1]),
-            "learning_rate": trial.suggest_float("learning_rate", search.learning_rate[0], search.learning_rate[1]),
-            "subsample": trial.suggest_float("subsample", search.subsample[0], search.subsample[1])
+            "n_estimators": trial.suggest_int("n_estimators", *search["n_estimators"]),
+            "max_depth": trial.suggest_int("max_depth", *search["max_depth"]),
+            "learning_rate": trial.suggest_float("learning_rate", *search["learning_rate"]),
+            "subsample": trial.suggest_float("subsample", *search["subsample"])
         }
 
     elif model_name == "lightgbm":
         model_params = {
-            "n_estimators": trial.suggest_int("n_estimators", search.n_estimators[0], search.n_estimators[1]),
-            "max_depth": trial.suggest_int("max_depth", search.max_depth[0], search.max_depth[1]),
-            "learning_rate": trial.suggest_float("learning_rate", search.learning_rate[0], search.learning_rate[1])
+            "n_estimators": trial.suggest_int("n_estimators", *search["n_estimators"]),
+            "max_depth": trial.suggest_int("max_depth", *search["max_depth"]),
+            "learning_rate": trial.suggest_float("learning_rate", *search["learning_rate"])
         }
 
     else:
@@ -57,7 +55,7 @@ def objective(trial, cfg):
     logger.info(f"Trial {trial.number} parameters: {model_params}")
 
     try:
-        df = load_data(data_path)
+        df = pd.read_csv(data_path)
         y = df[target_col]
         X = df.drop(columns=[target_col])
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
@@ -82,19 +80,19 @@ def objective(trial, cfg):
     except Exception as e:
         logger.error(f"Trial {trial.number} failed: {e}")
         raise
-    
-def run_tuning(cfg: DictConfig):
+
+
+def run_tuning():
     logger.info("Starting hyperparameter tuning...")
 
-    model_name = cfg.model.name
-    data_path = cfg.data.path
-    target_col = cfg.data.target
-    test_size = cfg.training.test_size
-    n_trials = cfg.training.n_trials
+    model_name = params["model"]["name"]
+    test_size = params["training"]["test_size"]
+    n_trials = params["training"]["n_trials"]
+    target_col = params["data"]["target"]
+    data_path = params["data"]["path"]
 
     study = optuna.create_study(direction="maximize")
-    
-    study.optimize(lambda trial: objective(trial, cfg), n_trials=n_trials)
+    study.optimize(objective, n_trials=n_trials)
 
     logger.info("Best trial:")
     logger.info(study.best_trial)
@@ -102,8 +100,7 @@ def run_tuning(cfg: DictConfig):
     best_params = study.best_params
     logger.info(f"Retraining final model with best parameters: {best_params}")
 
- 
-    df = load_data(data_path)
+    df = pd.read_csv(data_path)
     y = df[target_col]
     X = df.drop(columns=[target_col])
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
@@ -112,6 +109,12 @@ def run_tuning(cfg: DictConfig):
     final_model.fit(X_train, y_train)
 
     os.makedirs("models", exist_ok=True)
-    save_path = f"models/model_pipeline.pkl"
+    save_path = "models/model_pipeline.pkl"
     joblib.dump(final_model, save_path)
     logger.info(f"Final model saved to: {save_path}")
+
+
+if __name__ == "__main__":
+    params = dvc.api.params_show()
+    run_tuning()
+    
