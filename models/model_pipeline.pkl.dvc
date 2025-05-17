@@ -1,0 +1,5 @@
+outs:
+- md5: 51e12c2acaf538c949caced502bb0170
+  size: 131490
+  hash: md5
+  path: model_pipeline.pkl
