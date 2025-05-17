@@ -11,3 +11,27 @@ stages:
     outs:
     - data/processed/test.parquet
     - data/processed/train.parquet
+  train:
+    cmd: python src/train.py
+    deps:
+    - data/processed/train.parquet
+    - src/train.py
+    params:
+    - data.path
+    - data.target
+    - model.name
+    - model.params
+    - search_space.lightgbm.learning_rate
+    - search_space.lightgbm.max_depth
+    - search_space.lightgbm.n_estimators
+    - search_space.random_forest.criterion
+    - search_space.random_forest.max_depth
+    - search_space.random_forest.n_estimators
+    - search_space.xgboost.learning_rate
+    - search_space.xgboost.max_depth
+    - search_space.xgboost.n_estimators
+    - search_space.xgboost.subsample
+    - training.n_trials
+    - training.test_size
+    outs:
+    - models/model_pipeline.pkl
