@@ -36,3 +36,16 @@ stages:
     - training.test_size
     outs:
     - models/model_pipeline.pkl
+  evaluate:
+    cmd: python src/evaluate.py
+    deps:
+    - data/processed/test.parquet
+    - models/model_pipeline.pkl
+    - src/evaluate.py
+    params:
+    - evaluation.model_path
+    - evaluation.report_path
+    - evaluation.target_col
+    - evaluation.test_data_path
+    outs:
+    - reports/evaluation_report.json
