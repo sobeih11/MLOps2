@@ -37,15 +37,16 @@ stages:
     outs:
     - models/model_pipeline.pkl
   evaluate:
-    cmd: python src/evaluate.py
+    cmd: python src/evaluation.py
     deps:
     - data/processed/test.parquet
     - models/model_pipeline.pkl
-    - src/evaluate.py
+    - src/evaluation.py
     params:
     - evaluation.model_path
     - evaluation.report_path
     - evaluation.target_col
     - evaluation.test_data_path
-    outs:
-    - reports/evaluation_report.json
+    metrics:
+    - reports/evaluation_report.json:
+        cache: false
