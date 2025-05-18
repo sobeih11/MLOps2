@@ -2,20 +2,20 @@ import pandas as pd
 import joblib
 import os
 import json
+import dvc.api
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
-import hydra
-from omegaconf import DictConfig
-from src.logger import get_logger
+from logger import get_logger
+
 logger = get_logger(__name__)
 
-def evaluate_pipeline(cfg: DictConfig):
-    cfg = cfg.pipeline.evaluation  
+def evaluate_pipeline(params):
+    eval_cfg = params["evaluation"]
 
-    test_df = pd.read_parquet(cfg.test_data_path)
-    y_test = test_df[cfg.target_col]
-    X_test = test_df.drop(columns=[cfg.target_col])
+    test_df = pd.read_parquet(eval_cfg["test_data_path"])
+    y_test = test_df[eval_cfg["target_col"]]
+    X_test = test_df.drop(columns=[eval_cfg["target_col"]])
 
-    model = joblib.load(cfg.model_path)
+    model = joblib.load(eval_cfg["model_path"])
     preds = model.predict(X_test)
 
     acc = accuracy_score(y_test, preds)
@@ -32,10 +32,12 @@ def evaluate_pipeline(cfg: DictConfig):
         "confusion_matrix": cm
     }
 
-    os.makedirs(os.path.dirname(cfg.report_path), exist_ok=True)
-    with open(cfg.report_path, "w") as f:
+    os.makedirs(os.path.dirname(eval_cfg["report_path"]), exist_ok=True)
+    with open(eval_cfg["report_path"], "w") as f:
         json.dump(report, f, indent=2)
 
-    logger.info(f"Evaluation report saved to {cfg.report_path}")
+    logger.info(f" Evaluation report saved to {eval_cfg['report_path']}")
 
-
+if __name__ == "__main__":
+    params = dvc.api.params_show()
+    evaluate_pipeline(params)

@@ -32,6 +32,10 @@ stages:
       hash: md5
       md5: 44abb3281a100340e5108c732345be94
       size: 36304
+    - path: src/pipeline.py
+      hash: md5
+      md5: 01ce6c362089098a6b5f8964a0f1b9a5
+      size: 895
     - path: src/train.py
       hash: md5
       md5: 0cf19d8f09bcd167639ecdf833ad7f79
@@ -77,5 +81,31 @@ stages:
     outs:
     - path: models/model_pipeline.pkl
       hash: md5
-      md5: d1051ce1b73ce3379dada241b3a0e7d8
-      size: 279721
+      md5: 031dde73a3336a528f889cf140b9e214
+      size: 302314
+  evaluate:
+    cmd: python src/evaluation.py
+    deps:
+    - path: data/processed/test.parquet
+      hash: md5
+      md5: de4fa3aaf4546731e62bedd2b10195cd
+      size: 16205
+    - path: models/model_pipeline.pkl
+      hash: md5
+      md5: 031dde73a3336a528f889cf140b9e214
+      size: 302314
+    - path: src/evaluation.py
+      hash: md5
+      md5: d00ce7199a90cf60f223b03ff9c285ba
+      size: 1295
+    params:
+      params.yaml:
+        evaluation.model_path: models/model_pipeline.pkl
+        evaluation.report_path: reports/evaluation_report.json
+        evaluation.target_col: Survived
+        evaluation.test_data_path: data\processed\test.parquet
+    outs:
+    - path: reports/evaluation_report.json
+      hash: md5
+      md5: 4d161870ed8064b785cf2be90787d936
+      size: 243

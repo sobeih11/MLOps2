@@ -8,8 +8,8 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import (
     accuracy_score, confusion_matrix, precision_score, recall_score, f1_score
 )
-from src.pipeline import build_pipeline
-from src.logger import get_logger
+from pipeline import build_pipeline
+from logger import get_logger
 
 logger = get_logger(__name__)
 
@@ -55,7 +55,7 @@ def objective(trial):
     logger.info(f"Trial {trial.number} parameters: {model_params}")
 
     try:
-        df = pd.read_csv(data_path)
+        df = pd.read_parquet(data_path)
         y = df[target_col]
         X = df.drop(columns=[target_col])
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
@@ -82,7 +82,7 @@ def objective(trial):
         raise
 
 
-def run_tuning():
+def run_tuning(params):
     logger.info("Starting hyperparameter tuning...")
 
     model_name = params["model"]["name"]
@@ -100,7 +100,7 @@ def run_tuning():
     best_params = study.best_params
     logger.info(f"Retraining final model with best parameters: {best_params}")
 
-    df = pd.read_csv(data_path)
+    df = pd.read_parquet(data_path)
     y = df[target_col]
     X = df.drop(columns=[target_col])
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size)
@@ -116,5 +116,5 @@ def run_tuning():
 
 if __name__ == "__main__":
     params = dvc.api.params_show()
-    run_tuning()
+    run_tuning(params)
     
