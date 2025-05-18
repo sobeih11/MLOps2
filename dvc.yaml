@@ -15,6 +15,7 @@ stages:
     cmd: python src/train.py
     deps:
     - data/processed/train.parquet
+    - src/pipeline.py
     - src/train.py
     params:
     - data.path
