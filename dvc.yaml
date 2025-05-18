@@ -1,0 +1,52 @@
+stages:
+  split:
+    cmd: python src/split_data.py
+    deps:
+    - data/raw/Titanic-Dataset.csv
+    - src/split_data.py
+    params:
+    - split.data_path
+    - split.target_col
+    - split.test_size
+    outs:
+    - data/processed/test.parquet
+    - data/processed/train.parquet
+  train:
+    cmd: python src/train.py
+    deps:
+    - data/processed/train.parquet
+    - src/pipeline.py
+    - src/train.py
+    params:
+    - data.path
+    - data.target
+    - model.name
+    - model.params
+    - search_space.lightgbm.learning_rate
+    - search_space.lightgbm.max_depth
+    - search_space.lightgbm.n_estimators
+    - search_space.random_forest.criterion
+    - search_space.random_forest.max_depth
+    - search_space.random_forest.n_estimators
+    - search_space.xgboost.learning_rate
+    - search_space.xgboost.max_depth
+    - search_space.xgboost.n_estimators
+    - search_space.xgboost.subsample
+    - training.n_trials
+    - training.test_size
+    outs:
+    - models/model_pipeline.pkl
+  evaluate:
+    cmd: python src/evaluation.py
+    deps:
+    - data/processed/test.parquet
+    - models/model_pipeline.pkl
+    - src/evaluation.py
+    params:
+    - evaluation.model_path
+    - evaluation.report_path
+    - evaluation.target_col
+    - evaluation.test_data_path
+    metrics:
+    - reports/evaluation_report.json:
+        cache: false
