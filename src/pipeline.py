@@ -2,7 +2,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.ensemble import RandomForestClassifier
 from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
-from preprocess import build_preprocessor
+from src.preprocess import build_preprocessor
 
 def build_pipeline(model_name="random_forest", model_params: dict = None):
     if model_params is None:
