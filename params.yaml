@@ -23,21 +23,25 @@ search_space:
 
 # Data config
 data:
-  path: data\processed\train.parquet
+  path: data/processed/train.parquet
   target: Survived
 
 # Training config
 training:
   test_size: 0.1
   n_trials: 20
+  random_state: 42
 
 split:
   data_path: data/raw/Titanic-Dataset.csv
   target_col: Survived
   test_size: 0.2
+  random_state: 42
 
 evaluation:
   model_path: models/model_pipeline.pkl
-  test_data_path: data\processed\test.parquet
+  test_data_path: data/processed/test.parquet
   target_col: Survived
   report_path: reports/evaluation_report.json
+  registry_stage: champion1
+  registry_model_name: Titanic_Classifier_Model

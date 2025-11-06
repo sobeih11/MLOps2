@@ -10,8 +10,8 @@ from dotenv import load_dotenv
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
-from pipeline import build_pipeline
-from logger import get_logger
+from src.pipeline import build_pipeline
+from src.logger import get_logger
 import dagshub
 
 # ================== Setup ====================
